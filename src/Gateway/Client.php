@@ -63,10 +63,20 @@ class Client
         $url = $this->baseUrl . $endpoint;
         $curl = curl_init();
 
+        // Generate timestamp for the request
+        $timestamp = time();
+
+        // Generate signature for authentication
+        //remove domain from url
+        $requestUri = parse_url($url, PHP_URL_PATH);
+        $signatureData = strtoupper($method) . $requestUri . $timestamp . $this->clientId;
+        $signature = hash_hmac('sha256', $signatureData, $this->privateKey);
+
         $headers = [
             'Content-Type: application/json',
             'X-Client-ID: ' . $this->clientId,
-            'X-Private-Key: ' . $this->privateKey,
+            'X-Timestamp: ' . $timestamp,
+            'X-Signature: ' . $signature,
         ];
 
         curl_setopt($curl, CURLOPT_URL, $url);
