@@ -1,0 +1,32 @@
+{
+    "name": "geekwalletsrl/arnipay-sdk",
+    "version": "1.0.0",
+    "description": "SDK for integrating with the payment processing system",
+    "type": "library",
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-curl": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "vlucas/phpdotenv": "^5.3",
+        "mockery/mockery": "^1.4",
+        "php-mock/php-mock-phpunit": "^2.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "GwSdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "GwSdk\\Tests\\": "tests/"
+        }
+    },
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "scripts": {
+        "test": "phpunit"
+    }
+}

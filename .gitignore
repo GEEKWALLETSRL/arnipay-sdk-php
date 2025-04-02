@@ -1,0 +1,19 @@
+# Composer packages
+/vendor/
+composer.phar
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+
+# Environment files
+.env
+.env.test
+
+# Build directories
+/build/
+/coverage/
+
+# Local development config
+*.local.php
+
