@@ -16,12 +16,12 @@
     },
     "autoload": {
         "psr-4": {
-            "GwSdk\\": "src/"
+            "Arnipay\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "GwSdk\\Tests\\": "tests/"
+            "Arnipay\\Tests\\": "tests/"
         }
     },
     "license": "MIT",

@@ -1,6 +1,6 @@
 # Integration Tests
 
-This directory contains integration tests for the GwSdk that require a running server to test against.
+This directory contains integration tests for the Arnipay that require a running server to test against.
 
 ## Requirements
 

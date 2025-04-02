@@ -1,8 +1,8 @@
 <?php
 
-namespace GwSdk\Gateway;
+namespace Arnipay\Gateway;
 
-use GwSdk\Exception\GatewayException;
+use Arnipay\Exception\GatewayException;
 use InvalidArgumentException;
 
 class Client

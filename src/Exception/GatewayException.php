@@ -1,6 +1,6 @@
 <?php
 
-namespace GwSdk\Exception;
+namespace Arnipay\Exception;
 
 use Exception;
 

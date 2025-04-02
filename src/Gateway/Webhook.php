@@ -1,6 +1,6 @@
 <?php
 
-namespace GwSdk\Gateway;
+namespace Arnipay\Gateway;
 
 class Webhook
 {

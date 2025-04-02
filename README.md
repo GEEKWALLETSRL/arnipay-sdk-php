@@ -19,9 +19,9 @@ composer require geekwalletsrl/arnipay-sdk
 ```php
 require 'vendor/autoload.php';
 
-use GwSdk\Gateway\Client;
-use GwSdk\Gateway\PaymentLink;
-use GwSdk\Gateway\Webhook;
+use Arnipay\Gateway\Client;
+use Arnipay\Gateway\PaymentLink;
+use Arnipay\Gateway\Webhook;
 
 // Initialize the client
 $client = new Client(
@@ -51,7 +51,7 @@ try {
     
     echo "Payment link created with ID: " . $link['id'] . "\n";
     echo "Payment URL: " . $link['url'] . "\n";
-} catch (GwSdk\Exception\GatewayException $e) {
+} catch (Arnipay\Exception\GatewayException $e) {
     echo "Error: " . $e->getMessage() . "\n";
     if ($errors = $e->getErrors()) {
         print_r($errors);
@@ -71,7 +71,7 @@ try {
     echo "Title: " . $link['title'] . "\n";
     echo "Price: " . $link['price'] . "\n";
     echo "Is Paid: " . ($link['is_paid'] ? 'Yes' : 'No') . "\n";
-} catch (GwSdk\Exception\GatewayException $e) {
+} catch (Arnipay\Exception\GatewayException $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
 ```
@@ -90,7 +90,7 @@ try {
         echo "  Created: {$link['created_at']}\n";
         echo "  Status: " . ($link['is_paid'] ? 'Paid' : 'Not paid') . "\n";
     }
-} catch (GwSdk\Exception\GatewayException $e) {
+} catch (Arnipay\Exception\GatewayException $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
 ```
@@ -140,7 +140,7 @@ if ($event = $webhook->processEvent($payload, $signature)) {
 
 ## Error Handling
 
-The SDK throws `GwSdk\Exception\GatewayException` when an error occurs. This exception provides:
+The SDK throws `Arnipay\Exception\GatewayException` when an error occurs. This exception provides:
 
 - Error message
 - HTTP status code
@@ -149,7 +149,7 @@ The SDK throws `GwSdk\Exception\GatewayException` when an error occurs. This exc
 ```php
 try {
     // SDK operation
-} catch (GwSdk\Exception\GatewayException $e) {
+} catch (Arnipay\Exception\GatewayException $e) {
     echo "Error: " . $e->getMessage() . "\n";
     echo "Status Code: " . $e->getStatusCode() . "\n";
     

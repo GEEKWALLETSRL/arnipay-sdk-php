@@ -1,6 +1,6 @@
-# Tests for GwSdk
+# Tests for Arnipay
 
-This directory contains tests for the GwSdk PHP library.
+This directory contains tests for the Arnipay PHP library.
 
 ## Test Structure
 

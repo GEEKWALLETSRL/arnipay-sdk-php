@@ -1,9 +1,9 @@
 <?php
 
-namespace GwSdk\Tests;
+namespace Arnipay\Tests;
 
-use GwSdk\Gateway\Client;
-use GwSdk\Exception\GatewayException;
+use Arnipay\Gateway\Client;
+use Arnipay\Exception\GatewayException;
 use phpmock\phpunit\PHPMock;
 use PHPUnit\Framework\TestCase;
 
@@ -104,13 +104,13 @@ class ClientTest extends TestCase
     private function mockCurlFunctions(bool $hasError = false, int $statusCode = 200, string $response = '{"status":"success"}')
     {
         // Create function mocks
-        $curlInit = $this->getFunctionMock('GwSdk\Gateway', 'curl_init');
-        $curlSetopt = $this->getFunctionMock('GwSdk\Gateway', 'curl_setopt');
-        $curlExec = $this->getFunctionMock('GwSdk\Gateway', 'curl_exec');
-        $curlGetinfo = $this->getFunctionMock('GwSdk\Gateway', 'curl_getinfo');
-        $curlError = $this->getFunctionMock('GwSdk\Gateway', 'curl_error');
-        $curlErrno = $this->getFunctionMock('GwSdk\Gateway', 'curl_errno');
-        $curlClose = $this->getFunctionMock('GwSdk\Gateway', 'curl_close');
+        $curlInit = $this->getFunctionMock('Arnipay\Gateway', 'curl_init');
+        $curlSetopt = $this->getFunctionMock('Arnipay\Gateway', 'curl_setopt');
+        $curlExec = $this->getFunctionMock('Arnipay\Gateway', 'curl_exec');
+        $curlGetinfo = $this->getFunctionMock('Arnipay\Gateway', 'curl_getinfo');
+        $curlError = $this->getFunctionMock('Arnipay\Gateway', 'curl_error');
+        $curlErrno = $this->getFunctionMock('Arnipay\Gateway', 'curl_errno');
+        $curlClose = $this->getFunctionMock('Arnipay\Gateway', 'curl_close');
 
         // Configure mocks
         $curlInit->expects($this->once())->willReturn('curl-handle');

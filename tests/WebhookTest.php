@@ -1,8 +1,8 @@
 <?php
 
-namespace GwSdk\Tests;
+namespace Arnipay\Tests;
 
-use GwSdk\Gateway\Webhook;
+use Arnipay\Gateway\Webhook;
 use PHPUnit\Framework\TestCase;
 
 class WebhookTest extends TestCase

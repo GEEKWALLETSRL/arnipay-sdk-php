@@ -1,9 +1,9 @@
 <?php
 
-namespace GwSdk\Tests;
+namespace Arnipay\Tests;
 
-use GwSdk\Gateway\Client;
-use GwSdk\Gateway\PaymentLink;
+use Arnipay\Gateway\Client;
+use Arnipay\Gateway\PaymentLink;
 use PHPUnit\Framework\TestCase;
 
 class PaymentTest extends TestCase
