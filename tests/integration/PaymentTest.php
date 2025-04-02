@@ -26,7 +26,8 @@ class PaymentTest extends TestCase
         $this->client = new Client(
             $_ENV['CLIENT_ID'],
             $_ENV['PRIVATE_KEY'],
-            $_ENV['API_BASE_URL']
+            $_ENV['API_BASE_URL'],
+            false
         );
 
         $this->paymentLink = new PaymentLink($this->client);

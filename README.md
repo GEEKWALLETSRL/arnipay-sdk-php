@@ -196,3 +196,21 @@ $client = new Client(
     'https://staging.yourdomain.com/api/v1'
 );
 ```
+
+### SSL Verification
+
+By default, the SDK verifies SSL certificates when making HTTPS requests, which is the recommended secure approach. For local development or testing environments with self-signed certificates, you can disable SSL verification:
+
+```php
+// Disable SSL verification (use only in local/test environments)
+$client = new Client(
+    'your-client-id',
+    'your-private-key',
+    'https://staging.yourdomain.com/api/v1',
+    false // disable SSL verification
+);
+```
+
+⚠️ **Security Warning**: Disabling SSL verification makes your application vulnerable to man-in-the-middle attacks. Only use this option in controlled environments such as local development or testing, never in production.
+
+If you try to use a non-HTTPS URL with SSL verification enabled, the SDK will throw an `InvalidArgumentException`.
