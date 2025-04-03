@@ -25,10 +25,10 @@ class PaymentLinkTest extends TestCase
         // Create a real client instance with actual environment variables
         $this->client = new Client(
             $_ENV['CLIENT_ID'],
-            $_ENV['PRIVATE_KEY'],
-            $_ENV['API_BASE_URL'],
-            false
+            $_ENV['PRIVATE_KEY']
         );
+
+        $this->client->setBaseUrl($_ENV['API_BASE_URL'], false);
 
         $this->paymentLink = new PaymentLink($this->client);
     }

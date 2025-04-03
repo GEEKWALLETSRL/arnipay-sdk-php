@@ -2,7 +2,7 @@
 
 This SDK provides a simple and easy-to-use interface for integrating with our payment processing system.
 
-You can find the full API documentation [here](https://docs.yourdomain.com/api).
+You can find the full API documentation [here](https://github.com/GEEKWALLETSRL/arnipay-api).
 
 ## Installation
 
@@ -27,7 +27,6 @@ use Arnipay\Gateway\Webhook;
 $client = new Client(
     'your-client-id',
     'your-private-key',
-    'https://yourdomain.com/api/v1'
 );
 ```
 
@@ -159,34 +158,3 @@ try {
     }
 }
 ```
-
-## Advanced Configuration
-
-You can customize the base URL when initializing the client:
-
-```php
-// For development/staging environments
-$client = new Client(
-    'your-client-id',
-    'your-private-key',
-    'https://staging.yourdomain.com/api/v1'
-);
-```
-
-### SSL Verification
-
-By default, the SDK verifies SSL certificates when making HTTPS requests, which is the recommended secure approach. For local development or testing environments with self-signed certificates, you can disable SSL verification:
-
-```php
-// Disable SSL verification (use only in local/test environments)
-$client = new Client(
-    'your-client-id',
-    'your-private-key',
-    'https://staging.yourdomain.com/api/v1',
-    false // disable SSL verification
-);
-```
-
-⚠️ **Security Warning**: Disabling SSL verification makes your application vulnerable to man-in-the-middle attacks. Only use this option in controlled environments such as local development or testing, never in production.
-
-If you try to use a non-HTTPS URL with SSL verification enabled, the SDK will throw an `InvalidArgumentException`.

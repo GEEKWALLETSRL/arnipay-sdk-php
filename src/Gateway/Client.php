@@ -20,12 +20,12 @@ class Client
     /**
      * @var string
      */
-    protected $baseUrl;
+    protected $baseUrl = 'https://arnipay.com.py/api/v1';
 
     /**
      * @var bool Whether to verify the SSL certificate
      */
-    protected $verifySsl;
+    protected $verifySsl = true;
 
     /**
      * Client constructor.
@@ -36,17 +36,21 @@ class Client
      * @param bool $verifySsl Optional. Whether to verify the server's SSL certificate. Defaults to true. Set to false only for trusted local/testing environments.
      * @throws InvalidArgumentException If baseUrl is not HTTPS when verifySsl is true.
      */
-    public function __construct(string $clientId, string $privateKey, string $baseUrl = 'https://arnipay.com.py/api/v1', bool $verifySsl = true)
+    public function __construct(string $clientId, string $privateKey)
     {
         $this->clientId = $clientId;
         $this->privateKey = $privateKey;
-        $this->baseUrl = $baseUrl;
-        $this->verifySsl = $verifySsl;
+    }
 
+    public function setBaseUrl(string $baseUrl, bool $verifySsl = true)
+    {
         // Ensure HTTPS is used if verification is enabled
-        if ($this->verifySsl && strpos($this->baseUrl, 'https://') !== 0) {
+        if ($verifySsl && strpos($baseUrl, 'https://') !== 0) {
             throw new InvalidArgumentException('Base URL must use HTTPS when SSL verification is enabled.');
         }
+
+        $this->baseUrl = $baseUrl;
+        $this->verifySsl = $verifySsl;
     }
 
     /**

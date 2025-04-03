@@ -26,7 +26,7 @@ class ClientTest extends TestCase
             ])
         );
 
-        $client = new Client('test-client-id', 'test-private-key', 'https://test.example.com/api/v1');
+        $client = new Client('test-client-id', 'test-private-key');
 
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage('Validation failed');
@@ -49,7 +49,7 @@ class ClientTest extends TestCase
             ])
         );
 
-        $client = new Client('test-client-id', 'test-private-key', 'https://test.example.com/api/v1');
+        $client = new Client('test-client-id', 'test-private-key');
 
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage('Internal server error');
@@ -66,7 +66,7 @@ class ClientTest extends TestCase
         // Mock the curl functions with an error
         $this->mockCurlFunctions(true);
 
-        $client = new Client('test-client-id', 'test-private-key', 'https://test.example.com/api/v1');
+        $client = new Client('test-client-id', 'test-private-key');
 
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage('Connection error');
@@ -85,7 +85,7 @@ class ClientTest extends TestCase
         // Let's use a 400 status code but with invalid JSON to simulate an API error
         $this->mockCurlFunctions(false, 400, '{invalid-json');
 
-        $client = new Client('test-client-id', 'test-private-key', 'https://test.example.com/api/v1');
+        $client = new Client('test-client-id', 'test-private-key');
 
         $this->expectException(GatewayException::class);
         $this->expectExceptionMessage('API request failed');
