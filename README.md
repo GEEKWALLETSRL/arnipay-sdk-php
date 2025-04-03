@@ -160,30 +160,6 @@ try {
 }
 ```
 
-## Running Tests
-
-To run the test suite, you'll need to set up your environment variables first.
-
-1. Copy the example environment file:
-   ```bash
-   cp tests/.env.example tests/.env
-   ```
-
-2. Edit the `.env` file and provide your credentials:
-   ```
-   CLIENT_ID=your-client-id
-   PRIVATE_KEY=your-private-key
-   API_BASE_URL=https://yourdomain.com/api/v1
-   WEBHOOK_SECRET=your-webhook-secret
-   ```
-
-3. Run the tests using PHPUnit:
-   ```bash
-   composer test
-   ```
-
-This will run all the tests in the `tests/` directory. The tests use mocked HTTP responses, so they won't make actual API calls.
-
 ## Advanced Configuration
 
 You can customize the base URL when initializing the client:

@@ -4,7 +4,7 @@ This directory contains integration tests for the Arnipay that require a running
 
 ## Requirements
 
-- A running local server instance at the URL specified in the `.env` file
+- A running server instance at the URL specified in the `.env` file
 - Valid API credentials configured in the `.env` file
 
 ## Setup
