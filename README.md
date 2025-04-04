@@ -75,25 +75,6 @@ try {
 }
 ```
 
-### Listing All Payment Links
-
-```php
-$paymentLink = new PaymentLink($client);
-
-try {
-    $links = $paymentLink->list();
-    
-    echo "Payment links:\n";
-    foreach ($links as $link) {
-        echo "- {$link['title']} ({$link['id']}): {$link['price']}\n";
-        echo "  Created: {$link['created_at']}\n";
-        echo "  Status: " . ($link['is_paid'] ? 'Paid' : 'Not paid') . "\n";
-    }
-} catch (Arnipay\Exception\GatewayException $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-}
-```
-
 ### Handling Webhooks
 
 ```php
