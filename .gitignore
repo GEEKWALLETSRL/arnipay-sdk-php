@@ -16,4 +16,5 @@ composer.phar
 
 # Local development config
 *.local.php
+.gitignore.local
 
