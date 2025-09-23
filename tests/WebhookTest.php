@@ -3,6 +3,7 @@
 namespace Arnipay\Tests;
 
 use Arnipay\Gateway\Webhook;
+use Arnipay\Exception\GatewayException;
 use PHPUnit\Framework\TestCase;
 
 class WebhookTest extends TestCase
@@ -95,9 +96,11 @@ class WebhookTest extends TestCase
 
         $signature = 'sha256=' . hash_hmac('sha256', $payload, 'wrong-secret');
 
-        $result = $this->webhook->processEvent($payload, $signature);
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Invalid webhook signature');
+        $this->expectExceptionCode(401);
 
-        $this->assertEmpty($result);
+        $this->webhook->processEvent($payload, $signature);
     }
 
     public function testProcessEventWithInvalidPayload()
@@ -105,9 +108,11 @@ class WebhookTest extends TestCase
         $payload = 'not-a-json-string';
         $signature = 'sha256=' . hash_hmac('sha256', $payload, $this->webhookSecret);
 
-        $result = $this->webhook->processEvent($payload, $signature);
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Invalid JSON payload');
+        $this->expectExceptionCode(400);
 
-        $this->assertEmpty($result);
+        $this->webhook->processEvent($payload, $signature);
     }
 
     public function testProcessEventWithMissingFields()
@@ -119,8 +124,10 @@ class WebhookTest extends TestCase
 
         $signature = 'sha256=' . hash_hmac('sha256', $payload, $this->webhookSecret);
 
-        $result = $this->webhook->processEvent($payload, $signature);
+        $this->expectException(GatewayException::class);
+        $this->expectExceptionMessage('Invalid webhook payload');
+        $this->expectExceptionCode(422);
 
-        $this->assertEmpty($result);
+        $this->webhook->processEvent($payload, $signature);
     }
 }

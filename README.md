@@ -83,11 +83,12 @@ $webhook = new Webhook('your-webhook-secret');
 // Get the raw POST data
 $payload = file_get_contents('php://input');
 
-// Get the webhook signature from headers
+// Get the webhook signature from headers (value may be raw hex or prefixed with "sha256=")
 $signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
 
-// Validate and process the webhook
-if ($event = $webhook->processEvent($payload, $signature)) {
+try {
+    $event = $webhook->processEvent($payload, $signature);
+
     // Process based on event type
     switch ($event['event']) {
         case 'payment.completed':
@@ -95,26 +96,24 @@ if ($event = $webhook->processEvent($payload, $signature)) {
             $linkId = $event['data']['link_id'];
             $paymentId = $event['data']['payment_id'];
             $amount = $event['data']['amount'];
-            
             // Update your database or take appropriate action
             break;
-            
+
         case 'payment.failed':
             // Handle failed payment
             break;
-            
+
         case 'payment.pending':
             // Handle pending payment
             break;
     }
-    
-    // Send a success response
+
     http_response_code(200);
     echo json_encode(['status' => 'success']);
-} else {
-    // Invalid webhook
-    http_response_code(403);
-    echo json_encode(['status' => 'error', 'message' => 'Invalid webhook']);
+} catch (Arnipay\Exception\GatewayException $e) {
+    // Invalid signature or payload
+    http_response_code($e->getStatusCode() ?: 400);
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
 ```
 
@@ -139,3 +138,21 @@ try {
     }
 }
 ```
+
+## Testing
+
+The project defines separate PHPUnit test suites for unit and integration tests.
+
+- Unit tests (no external services required):
+
+```bash
+vendor/bin/phpunit --testsuite Unit
+```
+
+- Integration tests (require environment variables; see `tests/integration/README.md`):
+
+```bash
+vendor/bin/phpunit --testsuite Integration
+```
+
+Note: Using `--testsuite` is the recommended way to exclude integration tests. If you previously used `--exclude-group=integration` and still saw integration tests run, switch to the `--testsuite` commands above.

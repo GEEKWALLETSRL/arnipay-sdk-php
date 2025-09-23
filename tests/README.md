@@ -21,7 +21,7 @@ The tests are organized into two categories:
 ### Unit/Mock Tests Only
 
 ```bash
-vendor/bin/phpunit --exclude-group=integration
+vendor/bin/phpunit --testsuite Unit
 ```
 
 ### All Tests (including integration)
@@ -33,7 +33,7 @@ vendor/bin/phpunit
 ### Integration Tests Only
 
 ```bash
-vendor/bin/phpunit tests/integration
+vendor/bin/phpunit --testsuite Integration
 ```
 
 ## Environment Configuration

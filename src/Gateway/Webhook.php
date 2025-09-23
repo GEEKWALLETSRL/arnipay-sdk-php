@@ -2,6 +2,8 @@
 
 namespace Arnipay\Gateway;
 
+use Arnipay\Exception\GatewayException;
+
 class Webhook
 {
     /**
@@ -28,9 +30,14 @@ class Webhook
      */
     public function validateSignature(string $payload, string $signature): bool
     {
+        // Accept both raw hex and prefixed format like "sha256=..."
+        $providedSignature = strpos($signature, 'sha256=') === 0
+            ? substr($signature, 7)
+            : $signature;
+
         $expectedSignature = hash_hmac('sha256', $payload, $this->webhookSecret);
 
-        return hash_equals($expectedSignature, $signature);
+        return hash_equals($expectedSignature, $providedSignature);
     }
 
     /**
@@ -43,12 +50,17 @@ class Webhook
     public function processEvent(string $payload, string $signature): array
     {
         if (!$this->validateSignature($payload, $signature)) {
-            return [];
+            throw new GatewayException('Invalid webhook signature', 401);
         }
 
         $event = json_decode($payload, true);
-        if (!$event || !isset($event['event']) || !isset($event['data'])) {
-            return [];
+
+        if ($event === null && json_last_error() !== JSON_ERROR_NONE) {
+            throw new GatewayException('Invalid JSON payload', 400);
+        }
+
+        if (!is_array($event) || !isset($event['event']) || !isset($event['data'])) {
+            throw new GatewayException('Invalid webhook payload', 422);
         }
 
         return $event;
