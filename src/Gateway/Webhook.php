@@ -28,7 +28,7 @@ class Webhook
      */
     public function validateSignature(string $payload, string $signature): bool
     {
-        $expectedSignature = 'sha256=' . hash_hmac('sha256', $payload, $this->webhookSecret);
+        $expectedSignature = hash_hmac('sha256', $payload, $this->webhookSecret);
 
         return hash_equals($expectedSignature, $signature);
     }
