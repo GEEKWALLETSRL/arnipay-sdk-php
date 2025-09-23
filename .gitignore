@@ -4,7 +4,6 @@ composer.phar
 
 # PHPUnit
 .phpunit.result.cache
-/phpunit.xml
 
 # Environment files
 .env
