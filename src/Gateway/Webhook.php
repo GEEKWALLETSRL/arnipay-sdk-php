@@ -12,6 +12,11 @@ class Webhook
     protected $webhookSecret;
 
     /**
+     * @var SignatureService
+     */
+    protected $signatureService;
+
+    /**
      * Webhook constructor.
      *
      * @param string $webhookSecret Your webhook secret key
@@ -19,37 +24,48 @@ class Webhook
     public function __construct(string $webhookSecret)
     {
         $this->webhookSecret = $webhookSecret;
+        $this->signatureService = new SignatureService();
     }
 
     /**
-     * Validate the webhook signature
+     * Validate the webhook signature using the canonical string
      *
+     * @param string $method HTTP method used for the webhook request
+     * @param string $requestUri Request URI (path + optional query, no scheme/host)
+     * @param string $timestamp Timestamp from X-Timestamp header
+     * @param string $clientId Client identifier from X-Client-ID header
      * @param string $payload Raw request payload
-     * @param string $signature Signature from X-Webhook-Signature header
+     * @param string $signature Signature from X-Signature header
      * @return bool Whether the signature is valid
      */
-    public function validateSignature(string $payload, string $signature): bool
+    public function validateSignature(string $method, string $requestUri, string $timestamp, string $clientId, string $payload, string $signature): bool
     {
-        // Accept both raw hex and prefixed format like "sha256=..."
-        $providedSignature = strpos($signature, 'sha256=') === 0
-            ? substr($signature, 7)
-            : $signature;
+        $expectedSignature = $this->signatureService->generate(
+            $method,
+            $requestUri,
+            (int) $timestamp,
+            $clientId,
+            $this->webhookSecret,
+            $payload
+        );
 
-        $expectedSignature = hash_hmac('sha256', $payload, $this->webhookSecret);
-
-        return hash_equals($expectedSignature, $providedSignature);
+        return hash_equals($expectedSignature, $signature);
     }
 
     /**
      * Process webhook event
      *
+     * @param string $method HTTP method used for the webhook request
+     * @param string $requestUri Request URI (path + optional query)
+     * @param string $timestamp Timestamp from X-Timestamp header
+     * @param string $clientId Client identifier from X-Client-ID header
      * @param string $payload Raw request payload
-     * @param string $signature Signature from X-Webhook-Signature header
+     * @param string $signature Signature from X-Signature header
      * @return array Processed event data or empty array if invalid
      */
-    public function processEvent(string $payload, string $signature): array
+    public function processEvent(string $method, string $requestUri, string $timestamp, string $clientId, string $payload, string $signature): array
     {
-        if (!$this->validateSignature($payload, $signature)) {
+        if (!$this->validateSignature($method, $requestUri, $timestamp, $clientId, $payload, $signature)) {
             throw new GatewayException('Invalid webhook signature', 401);
         }
 

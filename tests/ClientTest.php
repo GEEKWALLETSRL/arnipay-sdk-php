@@ -23,7 +23,7 @@ class ClientTest extends TestCase
             json_encode([
                 'message' => 'Validation failed',
                 'errors' => ['field' => ['Field is required']]
-            ])
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         );
 
         $client = new Client('test-client-id', 'test-private-key');
@@ -46,7 +46,7 @@ class ClientTest extends TestCase
             500,
             json_encode([
                 'message' => 'Internal server error'
-            ])
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
         );
 
         $client = new Client('test-client-id', 'test-private-key');

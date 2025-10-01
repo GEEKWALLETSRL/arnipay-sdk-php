@@ -28,6 +28,11 @@ class Client
     protected $verifySsl = true;
 
     /**
+     * @var SignatureService
+     */
+    protected $signatureService;
+
+    /**
      * Client constructor.
      *
      * @param string $clientId Your Commerce client ID
@@ -40,6 +45,7 @@ class Client
     {
         $this->clientId = $clientId;
         $this->privateKey = $privateKey;
+        $this->signatureService = new SignatureService();
     }
 
     public function setBaseUrl(string $baseUrl, bool $verifySsl = true)
@@ -70,11 +76,23 @@ class Client
         // Generate timestamp for the request
         $timestamp = time();
 
-        // Generate signature for authentication
-        //remove domain from url
-        $requestUri = parse_url($url, PHP_URL_PATH);
-        $signatureData = strtoupper($method) . $requestUri . $timestamp . $this->clientId;
-        $signature = hash_hmac('sha256', $signatureData, $this->privateKey);
+        // Build canonical string components for signature
+        $requestUri = $this->signatureService->extractUri($url); // path + optional query, no scheme/host
+
+        // Prepare JSON body and body hash
+        $hasBodyMethod = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']);
+        $rawBody = '';
+        if ($hasBodyMethod && !empty($data)) {
+            $rawBody = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        }
+        $signature = $this->signatureService->generate(
+            $method,
+            $requestUri,
+            (int) $timestamp,
+            $this->clientId,
+            $this->privateKey,
+            $rawBody
+        );
 
         $headers = [
             'Content-Type: application/json',
@@ -98,8 +116,8 @@ class Client
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         }
 
-        if (!empty($data) && in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'])) {
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+        if ($rawBody !== '') {
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $rawBody);
         }
 
         $response = curl_exec($curl);
