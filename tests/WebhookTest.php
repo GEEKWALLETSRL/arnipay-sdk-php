@@ -17,6 +17,80 @@ class WebhookTest extends TestCase
         $this->webhook = new Webhook($this->webhookSecret);
     }
 
+    public function testCaptureRequestWithProvidedData()
+    {
+        $server = [
+            'REQUEST_METHOD' => 'post',
+            'REQUEST_URI' => '/webhook/test?foo=bar',
+            'HTTP_X_TIMESTAMP' => '1690000100',
+            'HTTP_X_CLIENT_ID' => 'demo-client',
+            'HTTP_X_SIGNATURE' => 'provided-signature',
+        ];
+        $payload = '{"event":"demo"}';
+
+        $captured = $this->webhook->captureRequest($server, $payload);
+
+        $this->assertSame('POST', $captured['method']);
+        $this->assertSame('/webhook/test?foo=bar', $captured['requestUri']);
+        $this->assertSame('1690000100', $captured['timestamp']);
+        $this->assertSame('demo-client', $captured['clientId']);
+        $this->assertSame($payload, $captured['payload']);
+        $this->assertSame('provided-signature', $captured['signature']);
+    }
+
+    public function testCaptureRequestAppliesDefaults()
+    {
+        $captured = $this->webhook->captureRequest([
+            'HTTP_X_TIMESTAMP' => '1690000200',
+            'HTTP_X_CLIENT_ID' => 'demo-client',
+            'HTTP_X_SIGNATURE' => 'provided-signature',
+        ], '');
+
+        $this->assertSame('POST', $captured['method']);
+        $this->assertSame('/', $captured['requestUri']);
+        $this->assertSame('1690000200', $captured['timestamp']);
+        $this->assertSame('demo-client', $captured['clientId']);
+        $this->assertSame('', $captured['payload']);
+        $this->assertSame('provided-signature', $captured['signature']);
+    }
+
+    public function testHandleRequestWithValidData()
+    {
+        $payload = json_encode([
+            'event' => 'payment.completed',
+            'timestamp' => '2023-01-01T00:00:00Z',
+            'data' => [
+                'link_id' => '550e8400-e29b-41d4-a716-446655440000',
+                'payment_id' => '12345',
+                'status' => 'paid',
+                'amount' => 150000
+            ]
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+        $bodyHash = base64_encode(hash('sha256', $payload, true));
+        $canonical = implode("\n", [
+            'POST',
+            '/webhook/test?foo=bar',
+            '1690000300',
+            'demo-client',
+            $bodyHash,
+        ]);
+        $signature = hash_hmac('sha256', $canonical, $this->webhookSecret);
+
+        $server = [
+            'REQUEST_METHOD' => 'POST',
+            'REQUEST_URI' => '/webhook/test?foo=bar',
+            'HTTP_X_TIMESTAMP' => '1690000300',
+            'HTTP_X_CLIENT_ID' => 'demo-client',
+            'HTTP_X_SIGNATURE' => $signature,
+        ];
+
+        $result = $this->webhook->handleRequest($server, $payload);
+
+        $this->assertEquals('payment.completed', $result['event']);
+        $this->assertEquals('12345', $result['data']['payment_id']);
+    }
+
     public function testValidateSignatureWithValidSignature()
     {
         $method = 'POST';

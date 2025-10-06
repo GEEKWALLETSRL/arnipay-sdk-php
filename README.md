@@ -77,22 +77,23 @@ try {
 
 ### Handling Webhooks
 
+The webhook payload is signed with the values below. Make sure your HTTP server forwards them to PHP:
+
+- `X-Timestamp` (`$_SERVER['HTTP_X_TIMESTAMP']`)
+- `X-Client-ID` (`$_SERVER['HTTP_X_CLIENT_ID']`)
+- `X-Signature` (`$_SERVER['HTTP_X_SIGNATURE']`)
+
+The SDK exposes helpers so you do not have to wire superglobals manually:
+
 ```php
 $webhook = new Webhook('your-webhook-secret');
 
-// Get the raw POST data
-$payload = file_get_contents('php://input');
-
-// Get the webhook signature from headers (value may be raw hex or prefixed with "sha256=")
-$signature = $_SERVER['HTTP_X_WEBHOOK_SIGNATURE'] ?? '';
-
 try {
-    $event = $webhook->processEvent($payload, $signature);
+    // Automatically captures method, URI, headers and body, then validates the signature.
+    $event = $webhook->handleRequest();
 
-    // Process based on event type
     switch ($event['event']) {
         case 'payment.completed':
-            // Handle successful payment
             $linkId = $event['data']['link_id'];
             $paymentId = $event['data']['payment_id'];
             $amount = $event['data']['amount'];
@@ -111,9 +112,32 @@ try {
     http_response_code(200);
     echo json_encode(['status' => 'success']);
 } catch (Arnipay\Exception\GatewayException $e) {
-    // Invalid signature or payload
     http_response_code($e->getStatusCode() ?: 400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+}
+```
+
+For custom frameworks or testing you can pass your own values:
+
+```php
+$captured = $webhook->captureRequest($serverArray, $rawPayload);
+
+if ($webhook->validateSignature(
+    $captured['method'],
+    $captured['requestUri'],
+    $captured['timestamp'],
+    $captured['clientId'],
+    $captured['payload'],
+    $captured['signature']
+)) {
+    $event = $webhook->processEvent(
+        $captured['method'],
+        $captured['requestUri'],
+        $captured['timestamp'],
+        $captured['clientId'],
+        $captured['payload'],
+        $captured['signature']
+    );
 }
 ```
 

@@ -21,10 +21,72 @@ class Webhook
      *
      * @param string $webhookSecret Your webhook secret key
      */
-    public function __construct(string $webhookSecret)
+    public function __construct(string $webhookSecret, bool $captureRequest = false)
     {
         $this->webhookSecret = $webhookSecret;
         $this->signatureService = new SignatureService();
+
+        if ($captureRequest) {
+            $this->captureRequest();
+        }
+    }
+
+    /**
+     * Capture webhook request details from the PHP runtime or provided overrides.
+     *
+     * @param array|null $server Optional server data; defaults to $_SERVER
+     * @param string|null $payload Optional payload; defaults to php://input contents
+     * @return array{method:string,requestUri:string,timestamp:string,clientId:string,payload:string,signature:string}
+     */
+    public function captureRequest(?array $server = null, ?string $payload = null): array
+    {
+        $server = $server ?? $_SERVER;
+
+        if ($payload === null) {
+            $input = file_get_contents('php://input');
+            $payload = $input === false ? '' : $input;
+        }
+
+        $method = strtoupper($server['REQUEST_METHOD'] ?? 'POST');
+
+        $rawUri = $server['REQUEST_URI'] ?? ($server['HTTP_X_ORIGINAL_URI'] ?? '/');
+        $requestUri = $this->signatureService->extractUri($rawUri);
+
+        $timestamp = (string) ($server['HTTP_X_TIMESTAMP'] ?? '');
+        $clientId = (string) ($server['HTTP_X_CLIENT_ID'] ?? '');
+        $signature = (string) ($server['HTTP_X_SIGNATURE'] ?? '');
+
+        return [
+            'method' => $method,
+            'requestUri' => $requestUri,
+            'timestamp' => $timestamp,
+            'clientId' => $clientId,
+            'payload' => $payload,
+            'signature' => $signature,
+        ];
+    }
+
+    /**
+     * Convenience wrapper to validate and process an incoming webhook HTTP request.
+     *
+     * @param array|null $server Optional server data; defaults to $_SERVER
+     * @param string|null $payload Optional payload; defaults to php://input contents
+     * @return array Processed event data
+     *
+     * @throws GatewayException
+     */
+    public function handleRequest(?array $server = null, ?string $payload = null): array
+    {
+        $captured = $this->captureRequest($server, $payload);
+
+        return $this->processEvent(
+            $captured['method'],
+            $captured['requestUri'],
+            $captured['timestamp'],
+            $captured['clientId'],
+            $captured['payload'],
+            $captured['signature']
+        );
     }
 
     /**
