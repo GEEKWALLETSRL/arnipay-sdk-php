@@ -1,6 +1,6 @@
 {
     "name": "geekwalletsrl/arnipay-sdk",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "SDK for integrating with the Arnipay payment processing system",
     "type": "library",
     "require": {

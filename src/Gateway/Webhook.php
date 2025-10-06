@@ -21,14 +21,10 @@ class Webhook
      *
      * @param string $webhookSecret Your webhook secret key
      */
-    public function __construct(string $webhookSecret, bool $captureRequest = false)
+    public function __construct(string $webhookSecret)
     {
         $this->webhookSecret = $webhookSecret;
         $this->signatureService = new SignatureService();
-
-        if ($captureRequest) {
-            $this->captureRequest();
-        }
     }
 
     /**
