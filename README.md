@@ -12,13 +12,57 @@ Install via Composer:
 composer require geekwalletsrl/arnipay-sdk
 ```
 
-## Usage
+## Quick Start (Recommended)
 
-### Initialization
+The easiest way to use the SDK is via the fluent interface.
 
 ```php
 require 'vendor/autoload.php';
 
+use Arnipay\Arnipay;
+
+// 1. Setup
+// The third argument 'true' enables Sandbox mode automatically.
+$arni = new Arnipay('CLIENT_ID', 'PRIVATE_KEY', true);
+
+// 2. Create Payment Link
+try {
+    $url = $arni->payment()
+        ->title('Pizza Order')
+        ->amount(50000)
+        ->reference('ORDER-123')
+        ->description('Two large pizzas')
+        ->redirect('https://site.com/thanks', 'https://site.com/oops')
+        ->allow(['qr', 'card']) // Optional: restrict payment methods
+        ->createUrl();
+        
+    echo "Pay here: " . $url;
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+// 3. Webhook Handling (webhook.php)
+try {
+    $arni->webhook('WEBHOOK_SECRET')->handle(function($event) {
+        if ($event->isPaid()) {
+            // $event->reference corresponds to the reference you set above
+            Order::complete($event->reference);
+        }
+    });
+    
+    http_response_code(200);
+} catch (Exception $e) {
+    http_response_code(400);
+}
+```
+
+## Advanced Usage (Service Pattern)
+
+For more control, you can use the underlying services directly.
+
+### Initialization
+
+```php
 use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentLink;
 use Arnipay\Gateway\Webhook;
@@ -26,8 +70,11 @@ use Arnipay\Gateway\Webhook;
 // Initialize the client
 $client = new Client(
     'your-client-id',
-    'your-private-key',
+    'your-private-key'
 );
+
+// For sandbox:
+// $client->setBaseUrl('https://sandbox-api.arnipay.com', false);
 ```
 
 ### Creating a Payment Link
@@ -75,13 +122,7 @@ try {
 }
 ```
 
-### Handling Webhooks
-
-The webhook payload is signed with the values below. Make sure your HTTP server forwards them to PHP:
-
-- `X-Timestamp` (`$_SERVER['HTTP_X_TIMESTAMP']`)
-- `X-Client-ID` (`$_SERVER['HTTP_X_CLIENT_ID']`)
-- `X-Signature` (`$_SERVER['HTTP_X_SIGNATURE']`)
+### Handling Webhooks (Manual)
 
 The SDK exposes helpers so you do not have to wire superglobals manually:
 
@@ -114,30 +155,6 @@ try {
 } catch (Arnipay\Exception\GatewayException $e) {
     http_response_code($e->getStatusCode() ?: 400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-}
-```
-
-For custom frameworks or testing you can pass your own values:
-
-```php
-$captured = $webhook->captureRequest($serverArray, $rawPayload);
-
-if ($webhook->validateSignature(
-    $captured['method'],
-    $captured['requestUri'],
-    $captured['timestamp'],
-    $captured['clientId'],
-    $captured['payload'],
-    $captured['signature']
-)) {
-    $event = $webhook->processEvent(
-        $captured['method'],
-        $captured['requestUri'],
-        $captured['timestamp'],
-        $captured['clientId'],
-        $captured['payload'],
-        $captured['signature']
-    );
 }
 ```
 
