@@ -41,7 +41,16 @@ try {
     echo "Error: " . $e->getMessage();
 }
 
-// 3. Webhook Handling (webhook.php)
+// 3. Get Payment Methods
+try {
+    $methods = $arni->getPaymentMethods();
+    // Returns array: [['code' => 'qr', 'name' => 'Código QR'], ...]
+    print_r($methods);
+} catch (Exception $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+// 4. Webhook Handling (webhook.php)
 try {
     $arni->webhook('WEBHOOK_SECRET')->handle(function($event) {
         if ($event->isPaid()) {
@@ -190,7 +199,7 @@ The project defines separate PHPUnit test suites for unit and integration tests.
 vendor/bin/phpunit --testsuite Unit
 ```
 
-- Integration tests (require environment variables; see `tests/integration/README.md`):
+- Integration tests (require environment variables; see `tests/Integration/README.md`):
 
 ```bash
 vendor/bin/phpunit --testsuite Integration
