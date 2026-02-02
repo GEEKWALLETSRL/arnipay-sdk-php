@@ -2,14 +2,12 @@
 
 namespace Arnipay\Tests\Integration;
 
-use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentLink;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @group integration
  */
-class PaymentLinkTest extends TestCase
+class PaymentLinkTest extends IntegrationTestCase
 {
     private $client;
     private $paymentLink;
@@ -17,19 +15,9 @@ class PaymentLinkTest extends TestCase
 
     protected function setUp(): void
     {
-        // Skip tests if environment variables are not set
-        if (!isset($_ENV['CLIENT_ID']) || !isset($_ENV['PRIVATE_KEY']) || !isset($_ENV['API_BASE_URL'])) {
-            $this->markTestSkipped('Required environment variables not set');
-        }
+        parent::setUp();
 
-        // Create a real client instance with actual environment variables
-        $this->client = new Client(
-            $_ENV['CLIENT_ID'],
-            $_ENV['PRIVATE_KEY']
-        );
-
-        $this->client->setBaseUrl($_ENV['API_BASE_URL'], false);
-
+        $this->client = $this->arnipay->getClient();
         $this->paymentLink = new PaymentLink($this->client);
     }
 

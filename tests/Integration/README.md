@@ -21,7 +21,7 @@ This directory contains integration tests for the Arnipay that require a running
 To run integration tests, use:
 
 ```bash
-vendor/bin/phpunit tests/integration
+vendor/bin/phpunit tests/Integration
 ```
 
 ## Important Notes
