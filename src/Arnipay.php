@@ -60,4 +60,16 @@ class Arnipay
     {
         return $this->client;
     }
+
+    /**
+     * Retrieves a list of available payment methods.
+     *
+     * @return array
+     * @throws Exception\GatewayException
+     */
+    public function getPaymentMethods(): array
+    {
+        $response = $this->client->request('GET', '/payment_methods');
+        return $response['data'] ?? [];
+    }
 }
