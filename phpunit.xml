@@ -7,10 +7,11 @@
   </coverage>
   <testsuites>
     <testsuite name="Unit">
-      <directory>tests/Unit</directory>
+      <directory>tests</directory>
+      <exclude>tests/integration</exclude>
     </testsuite>
     <testsuite name="Integration">
-      <directory>tests/Integration</directory>
+      <directory>tests/integration</directory>
     </testsuite>
   </testsuites>
 </phpunit>

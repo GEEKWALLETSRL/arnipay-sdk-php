@@ -73,4 +73,24 @@ class PaymentLink
 
         return $response['data'] ?? [];
     }
+
+    /**
+     * Reverse a payment
+     *
+     * @param string $id Payment link ID
+     * @param string|null $reason Optional reason for the reversal
+     * @return array Response data
+     * @throws GatewayException
+     */
+    public function reverse(string $id, ?string $reason = null): array
+    {
+        $data = [];
+        if ($reason !== null) {
+            $data['reason'] = $reason;
+        }
+
+        $response = $this->client->request('POST', "/payment/{$id}/reverse", $data);
+
+        return $response['data'] ?? [];
+    }
 }
