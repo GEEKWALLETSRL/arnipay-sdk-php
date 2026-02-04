@@ -7,8 +7,7 @@
   </coverage>
   <testsuites>
     <testsuite name="Unit">
-      <directory>tests</directory>
-      <exclude>tests/Integration</exclude>
+      <directory>tests/Unit</directory>
     </testsuite>
     <testsuite name="Integration">
       <directory>tests/Integration</directory>

@@ -75,6 +75,7 @@ For more control, you can use the underlying services directly.
 use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentLink;
 use Arnipay\Gateway\Webhook;
+use Arnipay\Gateway\Transaction;
 
 // Initialize the client
 $client = new Client(
@@ -131,6 +132,42 @@ try {
 }
 ```
 
+### Managing Transactions
+
+You can inspect specific transactions and perform actions on them, such as reversals.
+
+```php
+// List transactions for a specific payment link
+try {
+    $transactions = $arni->transaction()->list(['link_payment_id' => 123]);
+    foreach ($transactions as $tx) {
+        echo "Transaction ID: " . $tx['id'] . "\n";
+    }
+} catch (Exception $e) {
+    echo "Error listing transactions: " . $e->getMessage();
+}
+
+// Get a single transaction
+try {
+    $tx = $arni->transaction()->get('transaction-uuid');
+    print_r($tx);
+} catch (Exception $e) {
+    echo "Error getting transaction: " . $e->getMessage();
+}
+
+// Reverse a transaction (Refund)
+try {
+    $result = $arni->transaction()->reverse('transaction-uuid', 'Customer requested refund');
+    echo "Reversal initiated. Status: " . $result['status'];
+} catch (Arnipay\Exception\GatewayException $e) {
+    echo "Reversal failed: " . $e->getMessage();
+    // Check if it was because the payment method doesn't support it
+    if (isset($e->getErrors()['payment_method'])) {
+        echo "Payment method not supported for auto-reversal";
+    }
+}
+```
+
 ### Handling Webhooks (Manual)
 
 The SDK exposes helpers so you do not have to wire superglobals manually:
@@ -156,6 +193,14 @@ try {
 
         case 'payment.pending':
             // Handle pending payment
+            break;
+
+        case 'pending_refund':
+            // Handle out-of-stock condition detected
+            break;
+
+        case 'auto_refunded':
+            // Handle successful automatic refund
             break;
     }
 

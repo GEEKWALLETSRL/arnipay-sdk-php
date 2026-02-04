@@ -1,6 +1,6 @@
 <?php
 
-namespace Arnipay\Tests;
+namespace Arnipay\Tests\Unit;
 
 use Arnipay\Gateway\Webhook;
 use Arnipay\Exception\GatewayException;

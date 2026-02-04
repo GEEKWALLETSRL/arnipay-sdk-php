@@ -40,6 +40,26 @@ class WebhookEvent
     }
 
     /**
+     * Check if the event is a pending refund (out-of-stock detected).
+     *
+     * @return bool
+     */
+    public function isPendingRefund(): bool
+    {
+        return $this->getType() === 'pending_refund';
+    }
+
+    /**
+     * Check if the event is an automatic refund (funds returned).
+     *
+     * @return bool
+     */
+    public function isAutoRefunded(): bool
+    {
+        return $this->getType() === 'auto_refunded';
+    }
+
+    /**
      * Magic getter to access event properties.
      * 
      * @param string $name

@@ -1,13 +1,16 @@
 <?php
 
-namespace Arnipay\Tests;
+namespace Arnipay\Tests\Unit;
 
 use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentLink;
 use PHPUnit\Framework\TestCase;
 
-class PaymentTest extends TestCase
+class PaymentLinkTest extends TestCase
 {
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject&Client
+     */
     private $mockClient;
     private $paymentLink;
     private $testLinkId = 'mock-payment-link-id';
@@ -15,7 +18,6 @@ class PaymentTest extends TestCase
     protected function setUp(): void
     {
         // Create a mock client
-        /** @var Client&\PHPUnit\Framework\MockObject\MockObject $mockClient */
         $this->mockClient = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -149,9 +151,9 @@ class PaymentTest extends TestCase
     public static function suite()
     {
         $suite = new \PHPUnit\Framework\TestSuite('Payment Link Test Suite');
-        $suite->addTest(new PaymentTest('testCreate'));
-        $suite->addTest(new PaymentTest('testGet'));
-        $suite->addTest(new PaymentTest('testList'));
+        $suite->addTest(new PaymentLinkTest('testCreate'));
+        $suite->addTest(new PaymentLinkTest('testGet'));
+        $suite->addTest(new PaymentLinkTest('testList'));
         return $suite;
     }
 }

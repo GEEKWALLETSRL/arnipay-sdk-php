@@ -4,6 +4,7 @@ namespace Arnipay;
 
 use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentBuilder;
+use Arnipay\Gateway\Transaction;
 use Arnipay\Gateway\WebhookHandler;
 
 class Arnipay
@@ -59,6 +60,16 @@ class Arnipay
     public function getClient(): Client
     {
         return $this->client;
+    }
+
+    /**
+     * Get a transaction instance.
+     *
+     * @return Transaction
+     */
+    public function transaction(): Transaction
+    {
+        return new Transaction($this->client);
     }
 
     /**
