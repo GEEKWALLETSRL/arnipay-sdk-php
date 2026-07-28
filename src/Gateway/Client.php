@@ -7,6 +7,9 @@ use InvalidArgumentException;
 
 class Client
 {
+    public const PRODUCTION_BASE_URL = 'https://arnipay.com.py/api/v1';
+    public const SANDBOX_BASE_URL = 'https://sandbox.arnipay.com.py/api/v1';
+
     /**
      * @var string
      */
@@ -20,7 +23,7 @@ class Client
     /**
      * @var string
      */
-    protected $baseUrl = 'https://arnipay.com.py/api/v1';
+    protected $baseUrl = self::PRODUCTION_BASE_URL;
 
     /**
      * @var bool Whether to verify the SSL certificate
@@ -37,9 +40,6 @@ class Client
      *
      * @param string $clientId Your Commerce client ID
      * @param string $privateKey Your Commerce private key
-     * @param string $baseUrl API base URL. Must use https:// if verifySsl is true.
-     * @param bool $verifySsl Optional. Whether to verify the server's SSL certificate. Defaults to true. Set to false only for trusted local/testing environments.
-     * @throws InvalidArgumentException If baseUrl is not HTTPS when verifySsl is true.
      */
     public function __construct(string $clientId, string $privateKey)
     {
@@ -48,15 +48,27 @@ class Client
         $this->signatureService = new SignatureService();
     }
 
-    public function setBaseUrl(string $baseUrl, bool $verifySsl = true)
+    /**
+     * @param string $baseUrl API base URL. Must use https:// if verifySsl is true.
+     * @param bool $verifySsl Whether to verify the server's SSL certificate.
+     * @return self
+     * @throws InvalidArgumentException If baseUrl is not HTTPS when verifySsl is true.
+     */
+    public function setBaseUrl(string $baseUrl, bool $verifySsl = true): self
     {
-        // Ensure HTTPS is used if verification is enabled
         if ($verifySsl && strpos($baseUrl, 'https://') !== 0) {
             throw new InvalidArgumentException('Base URL must use HTTPS when SSL verification is enabled.');
         }
 
         $this->baseUrl = $baseUrl;
         $this->verifySsl = $verifySsl;
+
+        return $this;
+    }
+
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
     }
 
     /**
@@ -73,14 +85,10 @@ class Client
         $url = $this->baseUrl . $endpoint;
         $curl = curl_init();
 
-        // Generate timestamp for the request
         $timestamp = time();
+        $requestUri = $this->signatureService->extractUri($url);
 
-        // Build canonical string components for signature
-        $requestUri = $this->signatureService->extractUri($url); // path + optional query, no scheme/host
-
-        // Prepare JSON body and body hash
-        $hasBodyMethod = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH']);
+        $hasBodyMethod = in_array(strtoupper($method), ['POST', 'PUT', 'PATCH'], true);
         $rawBody = '';
         if ($hasBodyMethod && !empty($data)) {
             $rawBody = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -106,12 +114,10 @@ class Client
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, strtoupper($method));
 
-        // Set SSL verification options based on the setting
         if ($this->verifySsl) {
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         } else {
-            // Disable SSL verification (use with caution!)
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         }

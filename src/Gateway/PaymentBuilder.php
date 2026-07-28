@@ -132,9 +132,14 @@ class PaymentBuilder
      * Create the payment link.
      *
      * @return array
+     * @throws \InvalidArgumentException If amount() or title() were not set
      */
     public function create(): array
     {
+        if (!isset($this->amount) || !isset($this->title)) {
+            throw new \InvalidArgumentException('Payment requires amount() and title() before create()');
+        }
+
         $link = new PaymentLink($this->client);
         return $link->create($this->amount, $this->title, $this->description, $this->options);
     }

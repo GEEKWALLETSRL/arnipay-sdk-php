@@ -4,6 +4,7 @@ namespace Arnipay;
 
 use Arnipay\Gateway\Client;
 use Arnipay\Gateway\PaymentBuilder;
+use Arnipay\Gateway\PaymentLink;
 use Arnipay\Gateway\Transaction;
 use Arnipay\Gateway\WebhookHandler;
 
@@ -15,8 +16,6 @@ class Arnipay
     protected $client;
 
     /**
-     * Arnipay constructor.
-     *
      * @param string $clientId
      * @param string $privateKey
      * @param bool $isSandbox Whether to use the sandbox environment (default: false)
@@ -26,15 +25,12 @@ class Arnipay
         $this->client = new Client($clientId, $privateKey);
 
         if ($isSandbox) {
-            // Set the sandbox URL automatically
-            $this->client->setBaseUrl('https://sandbox.arnipay.com.py/api/v1', false);
+            $this->client->setBaseUrl(Client::SANDBOX_BASE_URL, false);
         }
     }
 
     /**
-     * Get a payment builder instance.
-     *
-     * @return PaymentBuilder
+     * Fluent payment-link builder
      */
     public function payment(): PaymentBuilder
     {
@@ -42,39 +38,32 @@ class Arnipay
     }
 
     /**
-     * Get a webhook handler instance.
-     *
-     * @param string $secret
-     * @return WebhookHandler
+     * Payment-link service (create/get/list/reverse)
+     */
+    public function paymentLinks(): PaymentLink
+    {
+        return new PaymentLink($this->client);
+    }
+
+    /**
+     * Webhook handler (validates + invokes callback)
      */
     public function webhook(string $secret): WebhookHandler
     {
         return new WebhookHandler($secret);
     }
 
-    /**
-     * Get the underlying Client instance.
-     *
-     * @return Client
-     */
     public function getClient(): Client
     {
         return $this->client;
     }
 
-    /**
-     * Get a transaction instance.
-     *
-     * @return Transaction
-     */
     public function transaction(): Transaction
     {
         return new Transaction($this->client);
     }
 
     /**
-     * Retrieves a list of available payment methods.
-     *
      * @return array
      * @throws Exception\GatewayException
      */
