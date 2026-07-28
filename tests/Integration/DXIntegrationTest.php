@@ -7,7 +7,7 @@ namespace Arnipay\Tests\Integration;
  */
 class DXIntegrationTest extends IntegrationTestCase
 {
-    protected $isSandbox = true;
+    protected $isSandbox = false;
 
     public function testFluentPaymentCreation()
     {
