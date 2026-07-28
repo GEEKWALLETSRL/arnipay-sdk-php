@@ -84,7 +84,10 @@ $client = new Client(
 );
 
 // For sandbox:
-// $client->setBaseUrl('https://sandbox-api.arnipay.com', false);
+// $client->setBaseUrl('https://sandbox.arnipay.com.py/api/v1', false);
+
+// For local development:
+// $client->setBaseUrl('http://arnipay.local/api/v1', false);
 ```
 
 ### Creating a Payment Link
@@ -179,14 +182,14 @@ try {
     // Automatically captures method, URI, headers and body, then validates the signature.
     $event = $webhook->handleRequest();
 
-    switch ($event['event']) {
-        case 'payment.completed':
-            $linkId = $event['data']['link_id'];
-            $paymentId = $event['data']['payment_id'];
-            $amount = $event['data']['amount'];
-            // Update your database or take appropriate action
-            break;
+    if ($event->isPaid()) {
+        // $event->get('reference') or $event['data']['payment_id']
+        $paymentId = $event->get('payment_id');
+        $amount = $event->get('amount');
+        // Update your database or take appropriate action
+    }
 
+    switch ($event->getType()) {
         case 'payment.failed':
             // Handle failed payment
             break;
