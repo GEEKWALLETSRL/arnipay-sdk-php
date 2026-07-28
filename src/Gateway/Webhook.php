@@ -7,6 +7,11 @@ use Arnipay\Exception\GatewayException;
 class Webhook
 {
     /**
+     * Default max age for webhook timestamps (15 minutes). Set 0 to disable.
+     */
+    public const DEFAULT_TOLERANCE_SECONDS = 900;
+
+    /**
      * @var string
      */
     protected $webhookSecret;
@@ -17,8 +22,6 @@ class Webhook
     protected $signatureService;
 
     /**
-     * Webhook constructor.
-     *
      * @param string $webhookSecret Your webhook secret key
      */
     public function __construct(string $webhookSecret)
@@ -63,15 +66,15 @@ class Webhook
     }
 
     /**
-     * Convenience wrapper to validate and process an incoming webhook HTTP request.
+     * Validate and process an incoming webhook HTTP request.
      *
      * @param array|null $server Optional server data; defaults to $_SERVER
      * @param string|null $payload Optional payload; defaults to php://input contents
-     * @return array Processed event data
-     *
+     * @param int $toleranceSeconds Reject timestamps older than this many seconds (0 = disable)
+     * @return WebhookEvent
      * @throws GatewayException
      */
-    public function handleRequest(?array $server = null, ?string $payload = null): array
+    public function handleRequest(?array $server = null, ?string $payload = null, int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS): WebhookEvent
     {
         $captured = $this->captureRequest($server, $payload);
 
@@ -81,27 +84,46 @@ class Webhook
             $captured['timestamp'],
             $captured['clientId'],
             $captured['payload'],
-            $captured['signature']
+            $captured['signature'],
+            $toleranceSeconds
         );
     }
 
     /**
      * Validate the webhook signature using the canonical string
      *
-     * @param string $method HTTP method used for the webhook request
-     * @param string $requestUri Request URI (path + optional query, no scheme/host)
-     * @param string $timestamp Timestamp from X-Timestamp header
-     * @param string $clientId Client identifier from X-Client-ID header
-     * @param string $payload Raw request payload
-     * @param string $signature Signature from X-Signature header
-     * @return bool Whether the signature is valid
+     * @param int $toleranceSeconds Reject timestamps older than this many seconds (0 = disable)
      */
-    public function validateSignature(string $method, string $requestUri, string $timestamp, string $clientId, string $payload, string $signature): bool
-    {
+    public function validateSignature(
+        string $method,
+        string $requestUri,
+        string $timestamp,
+        string $clientId,
+        string $payload,
+        string $signature,
+        int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS
+    ): bool {
+        if ($timestamp === '' || $clientId === '' || $signature === '') {
+            return false;
+        }
+
+        if (!ctype_digit((string) $timestamp) && !is_numeric($timestamp)) {
+            return false;
+        }
+
+        $ts = (int) $timestamp;
+
+        if ($toleranceSeconds > 0) {
+            $now = time();
+            if ($now - $ts > $toleranceSeconds) {
+                return false;
+            }
+        }
+
         $expectedSignature = $this->signatureService->generate(
             $method,
             $requestUri,
-            (int) $timestamp,
+            $ts,
             $clientId,
             $this->webhookSecret,
             $payload
@@ -111,19 +133,22 @@ class Webhook
     }
 
     /**
-     * Process webhook event
+     * Process webhook event. Throws on invalid signature/payload.
      *
-     * @param string $method HTTP method used for the webhook request
-     * @param string $requestUri Request URI (path + optional query)
-     * @param string $timestamp Timestamp from X-Timestamp header
-     * @param string $clientId Client identifier from X-Client-ID header
-     * @param string $payload Raw request payload
-     * @param string $signature Signature from X-Signature header
-     * @return array Processed event data or empty array if invalid
+     * @param int $toleranceSeconds Reject timestamps older than this many seconds (0 = disable)
+     * @return WebhookEvent
+     * @throws GatewayException
      */
-    public function processEvent(string $method, string $requestUri, string $timestamp, string $clientId, string $payload, string $signature): array
-    {
-        if (!$this->validateSignature($method, $requestUri, $timestamp, $clientId, $payload, $signature)) {
+    public function processEvent(
+        string $method,
+        string $requestUri,
+        string $timestamp,
+        string $clientId,
+        string $payload,
+        string $signature,
+        int $toleranceSeconds = self::DEFAULT_TOLERANCE_SECONDS
+    ): WebhookEvent {
+        if (!$this->validateSignature($method, $requestUri, $timestamp, $clientId, $payload, $signature, $toleranceSeconds)) {
             throw new GatewayException('Invalid webhook signature', 401);
         }
 
@@ -137,6 +162,6 @@ class Webhook
             throw new GatewayException('Invalid webhook payload', 422);
         }
 
-        return $event;
+        return new WebhookEvent($event);
     }
 }

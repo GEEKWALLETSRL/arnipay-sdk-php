@@ -2,7 +2,9 @@
 
 namespace Arnipay\Gateway;
 
-class WebhookEvent
+use ArrayAccess;
+
+class WebhookEvent implements ArrayAccess
 {
     /**
      * @var array
@@ -10,8 +12,6 @@ class WebhookEvent
     protected $data;
 
     /**
-     * WebhookEvent constructor.
-     *
      * @param array $data
      */
     public function __construct(array $data)
@@ -19,20 +19,13 @@ class WebhookEvent
         $this->data = $data;
     }
 
-    /**
-     * Get the event type.
-     *
-     * @return string|null
-     */
     public function getType(): ?string
     {
         return $this->data['event'] ?? null;
     }
 
     /**
-     * Check if the event is a payment completion.
-     *
-     * @return bool
+     * True when event is payment.completed
      */
     public function isPaid(): bool
     {
@@ -40,23 +33,21 @@ class WebhookEvent
     }
 
     /**
-     * Magic getter to access event properties.
-     * 
+     * Look up a field from data first, then top-level payload.
+     *
      * @param string $name
      * @return mixed
      */
-    public function __get($name)
+    public function get(string $name)
     {
         if ($name === 'type') {
             return $this->getType();
         }
 
-        // Try to find property in 'data' sub-array first
         if (isset($this->data['data']) && is_array($this->data['data']) && array_key_exists($name, $this->data['data'])) {
             return $this->data['data'][$name];
         }
 
-        // Fallback to top-level array
         if (array_key_exists($name, $this->data)) {
             return $this->data[$name];
         }
@@ -65,12 +56,46 @@ class WebhookEvent
     }
 
     /**
-     * Get the raw event data.
-     *
-     * @return array
+     * @param string $name
+     * @return mixed
      */
+    public function __get($name)
+    {
+        return $this->get($name);
+    }
+
     public function toArray(): array
     {
         return $this->data;
+    }
+
+    public function offsetExists($offset): bool
+    {
+        return array_key_exists($offset, $this->data);
+    }
+
+    /**
+     * @param mixed $offset
+     * @return mixed
+     */
+    #[\ReturnTypeWillChange]
+    public function offsetGet($offset)
+    {
+        return $this->data[$offset] ?? null;
+    }
+
+    public function offsetSet($offset, $value): void
+    {
+        if ($offset === null) {
+            $this->data[] = $value;
+            return;
+        }
+
+        $this->data[$offset] = $value;
+    }
+
+    public function offsetUnset($offset): void
+    {
+        unset($this->data[$offset]);
     }
 }
